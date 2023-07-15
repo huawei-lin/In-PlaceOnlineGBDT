@@ -29,7 +29,7 @@ Please note that it need to load the original data of the model.
 ```
 
 ### Decremental Learning 
-Here we would like to unlearn (delect) the 9-th data sample from the `optdigits.train.csv_robustlogit_J20_v0.1.model`.
+Here we would like to unlearn (delect) the 1-th to 10-th data samples from the `optdigits.train.csv_robustlogit_J20_v0.1.model`.
 Please note that it need to load the original data of the model.
 ```
 for i in {0..9}; do echo ${i}; done > unids.txt
