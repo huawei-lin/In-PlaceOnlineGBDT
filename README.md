@@ -34,6 +34,7 @@ Please note that it need to load the original data of the model.
 ```
 for i in {0..9}; do echo ${i}; done > unids.txt
 ./onlineGBDT_unlearn -data ./data/optdigits.train.csv -model optdigits.train.csv_robustlogit_J20_v0.1.model -unlearning_ids_path unids.txt
+```
 
 
 ### Predicting
