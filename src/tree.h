@@ -1,4 +1,4 @@
-// Copyright 2022 The ABCBoost Authors. All Rights Reserved.
+// Copyright 2022 The OnlineBoost Authors. All Rights Reserved.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -9,8 +9,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ABCBOOST_TREE_H
-#define ABCBOOST_TREE_H
+#ifndef ONLINEBOOST_TREE_H
+#define ONLINEBOOST_TREE_H
 
 #include <utility>  // std::pair
 #include <vector>
@@ -20,7 +20,7 @@
 #include "utils.h"
 
 
-namespace ABCBoost {
+namespace OnlineBoost {
 struct HistBin{
   int count;
   hist_t sum;
@@ -197,6 +197,6 @@ class Tree {
   }
 };
 
-}  // namespace ABCBoost
+}  // namespace OnlineBoost
 
-#endif  // ABCBOOST_TREE_H
+#endif  // ONLINEBOOST_TREE_H

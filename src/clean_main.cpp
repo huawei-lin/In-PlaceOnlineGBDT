@@ -1,4 +1,4 @@
-// Copyright 2022 The ABCBoost Authors. All Rights Reserved.
+// Copyright 2022 The OnlineBoost Authors. All Rights Reserved.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -21,15 +21,15 @@
 #include "utils.h"
 
 int main(int argc, char* argv[]) {
-  std::unique_ptr<ABCBoost::Config> config =
-      std::unique_ptr<ABCBoost::Config>(new ABCBoost::Config());
+  std::unique_ptr<OnlineBoost::Config> config =
+      std::unique_ptr<OnlineBoost::Config>(new OnlineBoost::Config());
   config->parseArguments(argc, argv);
   config->model_mode = "clean";
   config->sanityCheck();
 
 
-  std::unique_ptr<ABCBoost::Data> data =
-      std::unique_ptr<ABCBoost::Data>(new ABCBoost::Data(config.get()));
+  std::unique_ptr<OnlineBoost::Data> data =
+      std::unique_ptr<OnlineBoost::Data>(new OnlineBoost::Data(config.get()));
   if(config->clean_info == ""){
     data->cleanCSV();
   }else{

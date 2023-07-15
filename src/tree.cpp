@@ -1,4 +1,4 @@
-// Copyright 2022 The ABCBoost Authors. All Rights Reserved.
+// Copyright 2022 The OnlineBoost Authors. All Rights Reserved.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -31,7 +31,7 @@
 #include "utils.h"
 
 
-namespace ABCBoost {
+namespace OnlineBoost {
 
 inline HistBin csw_plus(const HistBin& a, const HistBin& b){
   return HistBin(a.count + b.count,a.sum + b.sum,a.weight + b.weight);
@@ -2341,4 +2341,4 @@ std::pair<int, int> Tree::generateFidV(int x) {
   return std::make_pair(random_fid, random_v);
 }
 
-}  // namespace ABCBoost
+}  // namespace OnlineBoost

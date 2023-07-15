@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(ABCBoost)
+project(In-PlaceOnlineBoost)
 
 if (CUDA)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O3 -march=native")

@@ -1,4 +1,4 @@
-// Copyright 2022 The ABCBoost Authors. All Rights Reserved.
+// Copyright 2022 The OnlineBoost Authors. All Rights Reserved.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -24,13 +24,13 @@
 #include "utils.h"
 
 int main(int argc, char* argv[]) {
-  std::unique_ptr<ABCBoost::Config> config =
-      std::unique_ptr<ABCBoost::Config>(new ABCBoost::Config());
+  std::unique_ptr<OnlineBoost::Config> config =
+      std::unique_ptr<OnlineBoost::Config>(new OnlineBoost::Config());
   config->parseArguments(argc, argv);
   config->model_mode = "unlearn";
 
-  ABCBoost::ModelHeader model_header =
-      ABCBoost::GradientBoosting::loadModelHeader(config.get());
+  OnlineBoost::ModelHeader model_header =
+      OnlineBoost::GradientBoosting::loadModelHeader(config.get());
   if (model_header.config.null_config == false) {
     *config = model_header.config;
     config->parseArguments(argc, argv);
@@ -42,8 +42,8 @@ int main(int argc, char* argv[]) {
 
   config->sanityCheck();
 
-  std::unique_ptr<ABCBoost::Data> data =
-      std::unique_ptr<ABCBoost::Data>(new ABCBoost::Data(config.get()));
+  std::unique_ptr<OnlineBoost::Data> data =
+      std::unique_ptr<OnlineBoost::Data>(new OnlineBoost::Data(config.get()));
   if (model_header.config.null_config == false){
     data->data_header = model_header.auxDataHeader;
     data->loadData(false);
@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
   std::vector<uint> unids;
   data->loadUnlearningIndies(config->unlearning_ids_path, unids);
 
-  std::unique_ptr<ABCBoost::GradientBoosting> model;
+  std::unique_ptr<OnlineBoost::GradientBoosting> model;
 
   // config->model_use_logit =
   //     (config->model_name.find("logit") != std::string::npos);
@@ -63,37 +63,37 @@ int main(int argc, char* argv[]) {
   if (config->model_name == "mart" || config->model_name == "robustlogit") {
     /*
     if(data->data_header.n_classes == 2){
-      model = std::unique_ptr<ABCBoost::GradientBoosting>(
-          new ABCBoost::BinaryMart(data.get(), config.get()));
+      model = std::unique_ptr<OnlineBoost::GradientBoosting>(
+          new OnlineBoost::BinaryMart(data.get(), config.get()));
     }else{
     */ 
-      model = std::unique_ptr<ABCBoost::GradientBoosting>(
-          new ABCBoost::Mart(data.get(), config.get()));
+      model = std::unique_ptr<OnlineBoost::GradientBoosting>(
+          new OnlineBoost::Mart(data.get(), config.get()));
   /*
     }
   } else if (config->model_name == "abcmart" ||
              config->model_name == "abcrobustlogit") {
     if(data->data_header.n_classes == 2){
-      model = std::unique_ptr<ABCBoost::GradientBoosting>(
-          new ABCBoost::BinaryMart(data.get(), config.get()));
+      model = std::unique_ptr<OnlineBoost::GradientBoosting>(
+          new OnlineBoost::BinaryMart(data.get(), config.get()));
     }else{
-      model = std::unique_ptr<ABCBoost::GradientBoosting>(
-          new ABCBoost::ABCMart(data.get(), config.get()));
+      model = std::unique_ptr<OnlineBoost::GradientBoosting>(
+          new OnlineBoost::ABCMart(data.get(), config.get()));
     }
   } else if (config->model_name == "regression") {
     config->model_is_regression = true;
-    model = std::unique_ptr<ABCBoost::GradientBoosting>(
-        new ABCBoost::Regression(data.get(), config.get()));
+    model = std::unique_ptr<OnlineBoost::GradientBoosting>(
+        new OnlineBoost::Regression(data.get(), config.get()));
   } else if (config->model_name == "lambdamart" || config->model_name == "lambdarank") {
     config->model_is_regression = 1;
         config->model_use_logit = true;
-    model = std::unique_ptr<ABCBoost::GradientBoosting>(
-                new ABCBoost::LambdaMart(data.get(), config.get()));
+    model = std::unique_ptr<OnlineBoost::GradientBoosting>(
+                new OnlineBoost::LambdaMart(data.get(), config.get()));
   } else if (config->model_name == "gbrank") {
     config->model_is_regression = 1;
         config->model_use_logit = true;
-    model = std::unique_ptr<ABCBoost::GradientBoosting>(
-                new ABCBoost::GBRank(data.get(), config.get()));
+    model = std::unique_ptr<OnlineBoost::GradientBoosting>(
+                new OnlineBoost::GBRank(data.get(), config.get()));
   } else {
     fprintf(stderr, "Unsupported model name %s\n", config->model_name.c_str());
     exit(1);

@@ -1,4 +1,4 @@
-// Copyright 2022 The ABCBoost Authors. All Rights Reserved.
+// Copyright 2022 The OnlineBoost Authors. All Rights Reserved.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -9,8 +9,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ABCBOOST_CONFIG_H
-#define ABCBOOST_CONFIG_H
+#ifndef ONLINEBOOST_CONFIG_H
+#define ONLINEBOOST_CONFIG_H
 
 #include <algorithm>
 #include <cstdio>
@@ -30,7 +30,7 @@
 #define printf Rprintf
 #endif
 
-namespace ABCBoost {
+namespace OnlineBoost {
 class Config {
  public:
   // Data config
@@ -361,7 +361,7 @@ class Config {
 
   void help() {
     printf(
-        "ABCBoost usage:\n\
+        "OnlineBoost usage:\n\
 #### Data related:\n\
 * `-data_use_mean_as_missing`\n\
 * `-data_min_bin_size` minimum size of the bin\n\
@@ -653,10 +653,10 @@ class Config {
 
   void sanityCheck() {
     if(model_mode == "clean" && additional_files != ""){
-      printf("[Warning] ignored -additional_files in abcboost_clean. Use comma separated file names in -data\n");
+      printf("[Warning] ignored -additional_files in onlineboost_clean. Use comma separated file names in -data\n");
     }
     if(model_mode == "clean" && clean_info != "" && normalize != ""){
-      printf("[Warning] ignored normalize parameter in abcboost_clean when cleaninfo is specified\n");
+      printf("[Warning] ignored normalize parameter in onlineboost_clean when cleaninfo is specified\n");
     }
   }
 
@@ -696,6 +696,6 @@ class Config {
   }
 };
 
-}  // namespace ABCBoost
+}  // namespace OnlineBoost
 
-#endif  // ABCBOOST_CONFIG_H
+#endif  // ONLINEBOOST_CONFIG_H

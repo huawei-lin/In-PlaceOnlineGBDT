@@ -1,4 +1,4 @@
-// Copyright 2022 The ABCBoost Authors. All Rights Reserved.
+// Copyright 2022 The OnlineBoost Authors. All Rights Reserved.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -9,8 +9,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ABCBOOST_MODEL_H
-#define ABCBOOST_MODEL_H
+#ifndef ONLINEBOOST_MODEL_H
+#define ONLINEBOOST_MODEL_H
 
 #include <algorithm>
 #include <cmath>
@@ -23,7 +23,7 @@
 #include "data.h"
 #include "tree.h"
 
-namespace ABCBoost {
+namespace OnlineBoost {
 
 struct ModelHeader {
   // config info
@@ -238,7 +238,7 @@ class GBRank : public GradientBoosting {
   void GBupdateF(int k, Tree* currTree,int n_iter);
 };
 
-}  // namespace ABCBoost
+}  // namespace OnlineBoost
 
-#endif  // ABCBOOST_MODEL_H
+#endif  // ONLINEBOOST_MODEL_H
 

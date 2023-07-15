@@ -1,4 +1,4 @@
-// Copyright 2022 The ABCBoost Authors. All Rights Reserved.
+// Copyright 2022 The OnlineBoost Authors. All Rights Reserved.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -32,7 +32,7 @@
 #endif
 #include "utils.h"
 
-namespace ABCBoost {
+namespace OnlineBoost {
 
 /**
  * Constructor of Data class.
@@ -1636,4 +1636,4 @@ inline std::string Data::to_lower(std::string& s){
   return ret;
 }
 
-}  // namespace ABCBoost
+}  // namespace OnlineBoost

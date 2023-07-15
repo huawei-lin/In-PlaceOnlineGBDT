@@ -1,4 +1,4 @@
-// Copyright 2022 The ABCBoost Authors. All Rights Reserved.
+// Copyright 2022 The OnlineBoost Authors. All Rights Reserved.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -40,7 +40,7 @@
 #endif
 
 
-namespace ABCBoost {
+namespace OnlineBoost {
 
 #ifndef OS_WIN
 #pragma omp declare reduction(vec_double_plus : std::vector<double> : \
@@ -2592,4 +2592,4 @@ void GBRank::savePrediction(){
 	GradientBoosting::savePrediction();
 }
 
-}  // namespace ABCBoost
+}  // namespace OnlineBoost

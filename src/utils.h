@@ -1,4 +1,4 @@
-// Copyright 2022 The ABCBoost Authors. All Rights Reserved.
+// Copyright 2022 The OnlineBoost Authors. All Rights Reserved.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -9,8 +9,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ABCBOOST_UTILS_H
-#define ABCBOOST_UTILS_H
+#ifndef ONLINEBOOST_UTILS_H
+#define ONLINEBOOST_UTILS_H
 
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__)
 #define OS_WIN
@@ -68,7 +68,7 @@ inline int debug_printf ( const char * format, ... ){
 	#endif
 }
 
-namespace ABCBoost {
+namespace OnlineBoost {
 
 //=============================================================================
 //
@@ -275,6 +275,6 @@ inline int ipow(int base, int exp) {
 
 }  // namespace Utils
 
-}  // namespace ABCBoost
+}  // namespace OnlineBoost
 
-#endif  // ABCBOOST_UTILS_H
+#endif  // ONLINEBOOST_UTILS_H
