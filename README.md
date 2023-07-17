@@ -19,17 +19,17 @@ Two datasets are provided under `data/` folder: [pendigits](https://archive.ics.
 ```
 ./onlineGBDT_train -method robustlogit -data ./data/optdigits.train.csv -v 0.1 -J 20 -iter 100 -feature_split_sample_rate 0.1
 ```
-This command will generate `optdigits.train.csv_robustlogit_J20_v0.1.model` that used for the following unlearning or tuning.
+This command will generate `optdigits.train.csv_robustlogit_J20_v0.1.model` that used for the following incremental learning or decremental learning.
 
 ### Incremental Learning
-Here we would like to tune (add) a new dataset `./data/optdigits.tune.csv` to the `optdigits.train.csv_robustlogit_J20_v0.1.model`.
+Here we would like to incrementally learn (add) a new dataset `./data/optdigits.tune.csv` to the `optdigits.train.csv_robustlogit_J20_v0.1.model`.
 Please note that it need to load the original data of the model.
 ```
 ./onlineGBDT_tune -method robustlogit -data ./data/optdigits.train.csv -tuning_data_path ./data/optdigits.tune.csv -model optdigits.train.csv_robustlogit_J20_v0.1.model
 ```
 
 ### Decremental Learning 
-Here we would like to unlearn (delect) the 1-th to 10-th data samples from the `optdigits.train.csv_robustlogit_J20_v0.1.model`.
+Here we would like to decrementally learn (delect) the 1-th to 10-th data samples from the `optdigits.train.csv_robustlogit_J20_v0.1.model`.
 Please note that it need to load the original data of the model.
 ```
 for i in {0..9}; do echo ${i}; done > unids.txt
