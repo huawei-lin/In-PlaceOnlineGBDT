@@ -1,4 +1,4 @@
-// Copyright 2022 The OnlineBoost Authors. All Rights Reserved.
+// Copyright 2022 The ONLINEGBDT Authors. All Rights Reserved.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -21,6 +21,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <map>
 #include <iomanip>
 
 #include "config.h"
@@ -40,7 +41,7 @@
 #endif
 
 
-namespace OnlineBoost {
+namespace ONLINEGBDT {
 
 #ifndef OS_WIN
 #pragma omp declare reduction(vec_double_plus : std::vector<double> : \
@@ -128,7 +129,8 @@ void GradientBoosting::print_train_message(int iter,double loss,double iter_time
     fprintf(log_out,"%4d %20.14e %7d %.5f\n", iter, loss, err, iter_time);
 }
 
-void GradientBoosting::print_unlearn_message(int iter,double loss,double iter_time, std::vector<std::vector<double>>& F){
+void GradientBoosting::print_train_message(int iter,double loss,double iter_time,
+        std::vector<std::vector<double>>& F){
   int err = getError(F);
   printf("%4d | loss: %20.14e | errors: %7d | time: %.5f\n", iter,
        loss, err, iter_time);
@@ -138,6 +140,32 @@ void GradientBoosting::print_unlearn_message(int iter,double loss,double iter_ti
   if(config->save_log)
     fprintf(log_out,"%4d %20.14e %7d %.5f\n", iter, loss, err, iter_time);
 }
+
+#ifdef TIME_EVALUATION
+void GradientBoosting::print_detailed_message(int iter, double loss, double iter_time, \
+        std::vector<std::vector<double>>& F, int retrain_node_cnt = 0){
+  int err = getError(F);
+  printf("%4d | loss: %0.0f (NULL) | errors: %7d | time: %.5f | retrain_node_cnt: %d",
+         iter, loss, err, iter_time, retrain_node_cnt);
+  for (auto it = time_records.begin(); it != time_records.end(); it++) {
+    printf(" | %s: %.5f", it->first.c_str(), it->second);
+  }
+
+#ifdef SPLIT_EVALUATION
+  for (auto it = vector_record.begin(); it != vector_record.end(); it++) {
+    printf(" | %s: ", it->first.c_str());
+    for (auto& x : it->second) printf("%f ", x);
+  }
+#endif
+  printf("\n");
+#ifdef USE_R_CMD
+  R_FlushConsole();
+#endif
+  if(config->save_log)
+    fprintf(log_out,"%4d %20.14e %7d %.5f\n", iter, loss, err, iter_time);
+}
+#endif
+
 
 ModelHeader GradientBoosting::loadModelHeader(Config *config) {
   FILE *fp = fopen(config->model_pretrained_path.c_str(), "rb");
@@ -611,19 +639,12 @@ void GradientBoosting::setupExperiment() {
  * @param[in] v : current training example to perform softmax over.
  */
 void GradientBoosting::softmax(std::vector<double> &v) {
-  double max = v[0], normalization = 0;
+  double normalization = 0;
   int j, sz = v.size();
 
-  auto v2 = v;
-  // find max value
-  for (j = 1; j < sz; ++j) {
-    max = std::max(max, v[j]);
-  }
-
   for (j = 0; j < sz; ++j) {
-    double tmp = v[j] - max;
-    if (tmp > 700) tmp = 700;
-    v[j] = exp(tmp);
+    if (v[j] > 700) v[j] = 700;
+    v[j] = exp(v[j]);
     normalization += v[j];
   }
 
@@ -1314,7 +1335,18 @@ void Mart::train() {
   t2.restart();
   t3.restart();
 
+#ifdef TIME_EVALUATION
+  Utils::Timer t4;
+  t4.restart();
+#endif
+
   for (int m = start_epoch; m < config->model_n_iterations; m++) {
+#ifdef TIME_EVALUATION
+    for (auto& x : time_records) x.second = 0;
+    for (auto& x : vector_record) x.second.clear();
+    t4.restart();
+#endif
+
     if (config->model_data_sample_rate < 1)
       ids = sample(data->n_data, config->model_data_sample_rate);
     if (config->model_feature_sample_rate < 1)
@@ -1322,11 +1354,18 @@ void Mart::train() {
           // sample(data->data_header.n_feats, config->model_feature_sample_rate);
           sample((data->valid_fi).size(), config->model_feature_sample_rate);
       fids_record.emplace_back(fids);
+
+#ifdef TIME_EVALUATION
+    time_records["train_model/sample_time"] += t4.get_time_restart();
+#endif
     
     F_record.emplace_back(F);
     computeHessianResidual();
     hessians_record.emplace_back(hessians);
     residuals_record.emplace_back(residuals);
+#ifdef TIME_EVALUATION
+    time_records["train_model/compute_HR_time"] += t4.get_time_restart();
+#endif
 
     for (int k = 0; k < K; ++k) {
       
@@ -1335,20 +1374,38 @@ void Mart::train() {
       tree = new Tree(data, config);
       tree->init(&hist, &buffer[0], &buffer[1], &feature_importance,
                  &(hessians[k * data->n_data]), &(residuals[k * data->n_data]),ids_tmp.data(),H_tmp.data(),R_tmp.data());
+#ifdef TIME_EVALUATION
+      tree->set_evlation_records(&time_records, &vector_record);
+      time_records["train_model/inittree_time"] += t4.get_time_restart();
+      tree->buildTree(&ids, &fids);
+      time_records["train_model/buildtree_time"] += t4.get_time_restart();
+      tree->updateFeatureImportance(m);
+      time_records["train_model/updFeat_time"] += t4.get_time_restart();
+      updateF(k, tree);
+      time_records["train_model/updF_time"] += t4.get_time_restart();
+      additive_trees[m][k] = std::unique_ptr<Tree>(tree);
+      time_records["train_model/save_tree_ptr_time"] += t4.get_time_restart();
+#else
       tree->buildTree(&ids, &fids);
       tree->updateFeatureImportance(m);
       updateF(k, tree);
       additive_trees[m][k] = std::unique_ptr<Tree>(tree);
+#endif
     }
 //    if (data->data_header.n_classes == 2) {
 //#pragma omp parallel for
 //      for (int i = 0; i < data->n_data; ++i) F[1][i] = -F[0][i];
 //    }
 
-    // double loss = getLoss();
-    double loss = 0;
+    double loss = getLoss();
+    double time_total = t1.get_time_restart();
+    // double loss = 0;
     if ((m + 1) % config->model_eval_every == 0){
-      print_train_message(m + 1,loss,t1.get_time_restart());
+#ifdef TIME_EVALUATION
+      print_detailed_message(m + 1,loss,time_total,F);
+#else
+      print_train_message(m + 1,loss,time_total);
+#endif
     }
     // if (config->save_model && (m + 1) % config->model_save_every == 0) saveModel(m + 1);
 //     if(loss < config->stop_tolerance){
@@ -1384,7 +1441,20 @@ void Mart::unlearn(std::vector<unsigned int>& unids) {
   t2.restart();
   t3.restart();
 
+#ifdef TIME_EVALUATION
+  Utils::Timer t4;
+  t4.restart();
+#endif
+
+  int retrain_node_num = 0;
   for (int m = start_epoch; m < config->model_n_iterations; m++) {
+
+#ifdef TIME_EVALUATION
+    for (auto& x : time_records) x.second = 0;
+    for (auto& x : vector_record) x.second.clear();
+    t4.restart();
+#endif
+
     if (config->model_data_sample_rate < 1)
       ids = sample(data->n_data, config->model_data_sample_rate);
 
@@ -1394,12 +1464,20 @@ void Mart::unlearn(std::vector<unsigned int>& unids) {
           // sample(data->data_header.n_feats, config->model_feature_sample_rate);
           sample((data->valid_fi).size(), config->model_feature_sample_rate);
     }
+#ifdef TIME_EVALUATION
+    time_records["unlearn_model/sample_time"] += t4.get_time_restart();
+#endif
 
     bool recomputeRH = false;
-    if (residuals_record.size() == 0 || (m + 1)%config->lazy_update_freq == 0) {
+    if (retrain_node_num > 0) {
       computeHessianResidual(F_record[m]);
       recomputeRH = true;
+      retrain_node_num = 0;
     }
+#ifdef TIME_EVALUATION
+    time_records["unlearn_model/compute_HR_time"] += t4.get_time_restart();
+    int retrain_node_cnt = 0;
+#endif
 
     for (int k = 0; k < K; ++k) {
 
@@ -1411,9 +1489,22 @@ void Mart::unlearn(std::vector<unsigned int>& unids) {
         tree->init(nullptr, &buffer[0], &buffer[1], &feature_importance,
                    &(hessians_record[m][k * data->n_data]), &(residuals_record[m][k * data->n_data]),ids_tmp.data(),H_tmp.data(),R_tmp.data());
       }
-      tree->unlearnTree(nullptr, &fids, &unids);
+#ifdef TIME_EVALUATION
+      tree->set_evlation_records(&time_records, &vector_record, &retrain_node_cnt);
+      time_records["unlearn_model/inittree_time"] += t4.get_time_restart();
+      retrain_node_num += tree->unlearnTree(nullptr, &fids, &unids);
+      time_records["unlearn_model/unlearntree_time"] += t4.get_time_restart();
       tree->updateFeatureImportance(m);
+      time_records["unlearn_model/updFeat_time"] += t4.get_time_restart();
+      // if (retrain_node_num > 0) updateF(m, k, tree, F_record);
       updateF(m, k, tree, F_record);
+      time_records["unlearn_model/updF_time"] += t4.get_time_restart();
+#else
+      retrain_node_num += tree->unlearnTree(nullptr, &fids, &unids);
+      tree->updateFeatureImportance(m);
+      // if (retrain_node_num > 0) updateF(m, k, tree, F_record);
+      updateF(m, k, tree, F_record);
+#endif
     }
 //    if (data->data_header.n_classes == 2) {
 //#pragma omp parallel for
@@ -1422,8 +1513,15 @@ void Mart::unlearn(std::vector<unsigned int>& unids) {
 
     // double loss = getLoss();
     double loss = 0;
+    double time_total = t1.get_time_restart();
+
     if ((m + 1) % config->model_eval_every == 0){
-      print_unlearn_message(m + 1,loss,t1.get_time_restart(), F_record[m + 1]);
+      // print_unlearn_message(m + 1,loss,t1.get_time_restart(), F_record[m + 1]);
+#ifdef TIME_EVALUATION
+      print_detailed_message(m + 1,loss,time_total, F_record[m + 1], retrain_node_cnt);
+#else
+      print_train_message(m + 1,loss,time_total, F_record[m + 1]);
+#endif
     }
     // if (config->save_model && (m + 1) % config->model_save_every == 0) saveModel(m + 1);
 //     if(loss < config->stop_tolerance){
@@ -1455,7 +1553,18 @@ void Mart::tune(std::vector<unsigned int>& tune_ids) {
   t2.restart();
   t3.restart();
 
+#ifdef TIME_EVALUATION
+  Utils::Timer t4;
+  t4.restart();
+#endif
+
+  int retrain_node_num = 0;
   for (int m = start_epoch; m < config->model_n_iterations; m++) {
+#ifdef TIME_EVALUATION
+    for (auto& x : time_records) x.second = 0;
+    for (auto& x : vector_record) x.second.clear();
+    t4.restart();
+#endif
     if (config->model_data_sample_rate < 1)
       ids = sample(data->n_data, config->model_data_sample_rate);
 
@@ -1465,12 +1574,27 @@ void Mart::tune(std::vector<unsigned int>& tune_ids) {
           // sample(data->data_header.n_feats, config->model_feature_sample_rate);
           sample((data->valid_fi).size(), config->model_feature_sample_rate);
     }
+#ifdef TIME_EVALUATION
+    time_records["tune_model/sample_time"] += t4.get_time_restart();
+#endif
 
     bool recomputeRH = false;
-    if (residuals_record.size() == 0 || (m + 1)%config->lazy_update_freq == 0) {
+    // computeHessianResidual(F_record[m]);
+    // recomputeRH = true;
+    // printf("retrain_node_num: %d\n", retrain_node_num);
+    // retrain_node_num = 0;
+    // printf("retrain_node_num: %d\n", retrain_node_num);
+    if (retrain_node_num > 0) {
       computeHessianResidual(F_record[m]);
       recomputeRH = true;
+      retrain_node_num = 0;
+    } else {
+      computeHessianResidual(F_record[m], tune_ids, residuals_record[m], hessians_record[m]);
     }
+#ifdef TIME_EVALUATION
+    time_records["tune_model/compute_HR_time"] += t4.get_time_restart();
+    int retrain_node_cnt = 0;
+#endif
 
     for (int k = 0; k < K; ++k) {
 
@@ -1482,9 +1606,22 @@ void Mart::tune(std::vector<unsigned int>& tune_ids) {
         tree->init(nullptr, &buffer[0], &buffer[1], &feature_importance,
                    &(hessians_record[m][k * data->n_data]), &(residuals_record[m][k * data->n_data]),ids_tmp.data(),H_tmp.data(),R_tmp.data());
       }
-      tree->tuneTree(nullptr, &fids, &tune_ids);
+#ifdef TIME_EVALUATION
+      tree->set_evlation_records(&time_records, &vector_record, &retrain_node_cnt);
+      time_records["tune_model/inittree_time"] += t4.get_time_restart();
+      retrain_node_num = tree->tuneTree(nullptr, &fids, &tune_ids);
+      time_records["tune_model/tunetree_time"] += t4.get_time_restart();
       tree->updateFeatureImportance(m);
-      updateF(m, k, tree, F_record);
+      time_records["tune_model/updFeat_time"] += t4.get_time_restart();
+      if (retrain_node_num > 0) updateF(m, k, tree, F_record);
+      // updateF(m, k, tree, F_record);
+      time_records["tune_model/updF_time"] += t4.get_time_restart();
+#else
+      retrain_node_num = tree->tuneTree(nullptr, &fids, &tune_ids);
+      tree->updateFeatureImportance(m);
+      if (retrain_node_num > 0) updateF(m, k, tree, F_record);
+      // updateF(m, k, tree, F_record);
+#endif
     }
 //    if (data->data_header.n_classes == 2) {
 //#pragma omp parallel for
@@ -1493,8 +1630,14 @@ void Mart::tune(std::vector<unsigned int>& tune_ids) {
 
     // double loss = getLoss();
     double loss = 0;
+    double time_total = t1.get_time_restart();
+
     if ((m + 1) % config->model_eval_every == 0){
-      print_unlearn_message(m + 1,loss,t1.get_time_restart(), F_record[m + 1]);
+#ifdef TIME_EVALUATION
+      print_detailed_message(m + 1,loss,time_total, F_record[m + 1], retrain_node_cnt);
+#else
+      print_train_message(m + 1,loss,time_total, F_record[m + 1]);
+#endif
     }
     // if (config->save_model && (m + 1) % config->model_save_every == 0) saveModel(m + 1);
 //     if(loss < config->stop_tolerance){
@@ -1516,9 +1659,9 @@ void Mart::tune(std::vector<unsigned int>& tune_ids) {
  */
 void Mart::computeHessianResidual() {
   std::vector<double> prob;
+  prob.resize(data->data_header.n_classes);
 #pragma omp parallel for schedule(static) private(prob)
   for (unsigned int i = 0; i < data->n_data; ++i) {
-    prob.resize(data->data_header.n_classes);
     int label = int(data->Y[i]);
     for (int k = 0; k < data->data_header.n_classes; ++k) {
       prob[k] = F[k][i];
@@ -1534,9 +1677,29 @@ void Mart::computeHessianResidual() {
 
 void Mart::computeHessianResidual(std::vector<std::vector<double>>& F) {
   std::vector<double> prob;
+  prob.resize(data->data_header.n_classes);
 #pragma omp parallel for schedule(static) private(prob)
   for (unsigned int i = 0; i < data->n_data; ++i) {
-    prob.resize(data->data_header.n_classes);
+    // prob.resize(data->data_header.n_classes);
+    int label = int(data->Y[i]);
+    for (int k = 0; k < data->data_header.n_classes; ++k) {
+      prob[k] = F[k][i];
+    }
+    softmax(prob);
+    for (int k = 0; k < data->data_header.n_classes; ++k) {
+      double p_ik = prob[k];
+      residuals[k * data->n_data + i] = (k == label) ? (1 - p_ik) : -p_ik;
+      hessians[k * data->n_data + i] = p_ik * (1 - p_ik);
+    }
+  }
+}
+
+void Mart::computeHessianResidual(std::vector<std::vector<double>>& F, std::vector<unsigned int>& tune_ids, std::vector<double>& residuals, std::vector<double>& hessians) {
+  std::vector<double> prob;
+  prob.resize(data->data_header.n_classes);
+#pragma omp parallel for schedule(static) private(prob)
+  for (unsigned int& i : tune_ids) {
+    // prob.resize(data->data_header.n_classes);
     int label = int(data->Y[i]);
     for (int k = 0; k < data->data_header.n_classes; ++k) {
       prob[k] = F[k][i];
@@ -2592,4 +2755,4 @@ void GBRank::savePrediction(){
 	GradientBoosting::savePrediction();
 }
 
-}  // namespace OnlineBoost
+}  // namespace ONLINEGBDT

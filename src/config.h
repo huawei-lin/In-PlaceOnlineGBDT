@@ -1,4 +1,4 @@
-// Copyright 2022 The OnlineBoost Authors. All Rights Reserved.
+// Copyright 2022 The ONLINEGBDT Authors. All Rights Reserved.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -9,8 +9,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ONLINEBOOST_CONFIG_H
-#define ONLINEBOOST_CONFIG_H
+#ifndef ONLINEGBDT_CONFIG_H
+#define ONLINEGBDT_CONFIG_H
 
 #include <algorithm>
 #include <cstdio>
@@ -30,7 +30,7 @@
 #define printf Rprintf
 #endif
 
-namespace OnlineBoost {
+namespace ONLINEGBDT {
 class Config {
  public:
   // Data config
@@ -134,7 +134,7 @@ class Config {
   double gbrank_update_factor = 100;
   std::string map_dump_format = "";
   std::string task_name = "";
-  int lazy_update_freq = 1;
+  double split_robustness_tolerance = 0;
 
   // Rank Query File
   std::string rank_query_file = "";
@@ -361,36 +361,61 @@ class Config {
 
   void help() {
     printf(
-        "OnlineBoost usage:\n\
+        "ONLINEGBDT usage:\n\
 #### Data related:\n\
 * `-data_use_mean_as_missing`\n\
 * `-data_min_bin_size` minimum size of the bin\n\
+* `-data_sparsity_threshold`\n\
 * `-data_max_n_bins` max number of bins (default 1000)\n\
 * `-data_path, -data` path to train/test data\n\
 #### Tree related:\n\
+* `-tree_clip_value` gradient clip (default 50)\n\
+* `-tree_damping_factor`, regularization on numerator (default 1e-100)\n\
 * `-tree_max_n_leaves`, -J (default 20)\n\
 * `-tree_min_node_size` (default 10)\n\
 * `-tree_n_random_layers` (default 0)\n\
 * `-feature_split_sample_rate` (default 1.0)\n\
 #### Model related:\n\
+* `-model_use_logit`, whether use logitboost\n\
 * `-model_data_sample_rate` (default 1.0)\n\
 * `-model_feature_sample_rate` (default 1.0)\n\
 * `-model_shrinkage`, `-shrinkage`, `-v`, the learning rate (default 0.1)\n\
 * `-model_n_iterations`, `-iter` (default 1000)\n\
-* `-model_n_classes` (default 0) the max number of classes allowed in this model (>= the number of classes on current dataset, 0 indicates do not set a specific class number)\n\
+* `-model_save_every`, `-save` (default 100)\n\
+* `-model_eval_every`, `-eval` (default 1)\n\
 * `-model_name`, `-method` regression/lambdarank/mart/abcmart/robustlogit/abcrobustlogit (default robustlogit)\n\
+* `-model_pretrained_path`, `-model`\n\
+#### Adaptive Base Class (ABC) related:\n\
+* `-model_base_candidate_size`, `base_candidates_size`, `-search`, base class searching size in abcmart/abcrobustlogit (default 2)\n\
+* `-model_gap`, `-gap` (default 5) The gap between two base class searchings. For example, `-model_gap 2` means we will do the base class searching in iteration 1, 4, 6, ...\n\
+* `-model_warmup_iter`, `-warmup_iter` (default 0) the number of iterations that use normal boosting before ABC method kicks in. It might be helpful for datasets with a large number of classes when we only have a limited base class searching parameter (`-model_base_candidate_size`) \n\
+* `-model_warmup_use_logit`, `-warmup_use_logit` 0/1 (default 1) whether use logitboost in warmup iterations.\n\
+* `-model_abc_sample_rate`, `-abc_sample_rate` (default 1.0) the sample rate used for the base class searching\n\
+* `-model_abc_sample_min_data` `-abc_sample_min_data` (default 2000) the minimum sampled data for base class selection. This parameter only takes into effect when `-abc_sample_rate` is less than `1.0`\n\
+#### Regression related:\n\
+* `-regression_lp_loss`, `-lp` (default 2.0) whether use Lp norm instead of L2 norm. p (p >= 1.0) has to be specified\n\
+* `-regression_test_lp`, `-test_lp` (default none) display Lp norm as an additional column in test log. p (p >= 1.0) has to be specified\n\
+* `-regression_use_hessian` 0/1 (default 1) whether use second-order derivatives in the regression. This parameter only takes into effect when `-regression_lp_loss p` is set and `p` is greater than `2`.\n\
+* `-regression_huber_loss`, `-huber` 0/1 (default 0) whether use huber loss\n\
+* `-regression_huber_delta`, `-huber_delta` the delta parameter for huber loss. This parameter only takes into effect when `-regression_huber_loss 1` is set\n\
 #### Unlearning related:\n\
-* `-unlearning_ids_path` path to unlearning indices\n\
-* `-lazy_update_freq` (default 1)\n\
-#### Tuning related:\n\
-* `-tuning_data_path` path to tuning data\n\
+* `-unlearning_ids_path` path to unlearning's indies\n\
+* `-split_robustness_tolerance` (default 0)\n\
 #### Parallelism:\n\
 * `-n_threads`, `-threads` (default 1)\n\
+* `-use_gpu` 0/1 (default 1 if compiled with CUDA) whether use GPU to train models. This parameter only takes into effect when the flag `-DCUDA=on` is set in `cmake`.\n\
 #### Other:\n\
 * `-save_log`, 0/1 (default 0) whether save the runtime log to file\n\
 * `-save_model`, 0/1 (default 1)\n\
 * `-save_prob`, 0/1 (default 0) whether save the prediction probability for classification tasks\n\
 * `-save_importance`, 0/1 (default 0) whether save the feature importance in the training\n\
+* `-no_label`, 0/1 (default 0) It should only be enabled to output prediction file when the testing data has no label in test\n\
+* `-test_auc`, 0/1 (default 0) whether compute AUC in test\n\
+* `-stop_tolerance` (default 2e-14) It works for all non-regression tasks, e.g., classification. The training will stop when the total training loss is less than the stop tolerance.\n\
+* `-regression_stop_factor` (default 1e-5) The auto stopping criterion is different from the classification task because the scale of the regression target is unknown. We adaptively set the regression stop tolerate to `regression_stop_factor * total_loss / sum(y^p)`, where `y` is the regression targets and `p` is the value specified in `-regression_lp_loss`.\n\
+* `-regression_auto_clip_value` 0/1 (default 1) whether use our adaptive clipping value computation for the predict value on terminal nodes. When enabled, the adaptive clipping value is computed as `tree_clip_value * max_y - min_y` where `tree_clip_value` is set via `-tree_clip_value`, `max_y` and `min_y` are the maximum and minimum regression target value, respectively.\n\
+* `-gbrank_tau` (default 0.1) The tau parameter for gbrank.\n\
+* `-gbrank_update_factor` (default 100) The update step size is the factor*tau.\n\
 ");
   }
 
@@ -594,8 +619,8 @@ class Config {
         map_dump_format = value;
       } else if (key == "task_name") {
         task_name = value;
-      } else if (key == "lazy_update_freq") {
-        lazy_update_freq = stoi(value);
+      } else if (key == "split_robustness_tolerance") {
+        split_robustness_tolerance = stod(value);
       } else if (key == "model_warmup_iter" || key == "warmup_iter") {
         warmup_iter = stoi(value);
       } else if (key == "model_warmup_use_logit" || key == "warmup_use_logit") {
@@ -653,10 +678,10 @@ class Config {
 
   void sanityCheck() {
     if(model_mode == "clean" && additional_files != ""){
-      printf("[Warning] ignored -additional_files in onlineboost_clean. Use comma separated file names in -data\n");
+      printf("[Warning] ignored -additional_files in onlineGBDT_clean. Use comma separated file names in -data\n");
     }
     if(model_mode == "clean" && clean_info != "" && normalize != ""){
-      printf("[Warning] ignored normalize parameter in onlineboost_clean when cleaninfo is specified\n");
+      printf("[Warning] ignored normalize parameter in onlineGBDT_clean when cleaninfo is specified\n");
     }
   }
 
@@ -696,6 +721,6 @@ class Config {
   }
 };
 
-}  // namespace OnlineBoost
+}  // namespace ONLINEGBDT
 
-#endif  // ONLINEBOOST_CONFIG_H
+#endif  // ONLINEGBDT_CONFIG_H

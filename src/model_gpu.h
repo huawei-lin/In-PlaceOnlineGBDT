@@ -1,4 +1,4 @@
-// Copyright 2022 The OnlineBoost Authors. All Rights Reserved.
+// Copyright 2022 The ONLINEGBDT Authors. All Rights Reserved.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -9,8 +9,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ONLINEBOOST_MODEL_GPU_H
-#define ONLINEBOOST_MODEL_GPU_H
+#ifndef ONLINEGBDT_MODEL_GPU_H
+#define ONLINEGBDT_MODEL_GPU_H
 
 #include <algorithm>
 #include <cmath>
@@ -24,7 +24,7 @@
 #include "tree.h"
 #include "model.h"
 
-namespace OnlineBoost {
+namespace ONLINEGBDT {
 
 class GradientBoostingGPU : public GradientBoosting{
  public:
@@ -155,7 +155,7 @@ class RegressionGPU : public GradientBoostingGPU{
   void computeHessianResidual(double* d_prob);
 };
 
-}  // namespace OnlineBoost
+}  // namespace ONLINEGBDT
 
-#endif  // ONLINEBOOST_MODEL_H
+#endif  // ONLINEGBDT_MODEL_H
 

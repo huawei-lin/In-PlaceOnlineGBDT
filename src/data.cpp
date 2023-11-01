@@ -1,4 +1,4 @@
-// Copyright 2022 The OnlineBoost Authors. All Rights Reserved.
+// Copyright 2022 The ONLINEGBDT Authors. All Rights Reserved.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -32,7 +32,7 @@
 #endif
 #include "utils.h"
 
-namespace OnlineBoost {
+namespace ONLINEGBDT {
 
 /**
  * Constructor of Data class.
@@ -1002,7 +1002,8 @@ void Data::restoreDenseFeatures() {
     i_offset[j] = i_sz;
     v_offset[j] = v_sz;
     sz = Xi[j].size();
-    if (1.0 * sz / n_data > config->data_sparsity_threshold) {
+    // if (1.0 * sz / n_data > config->data_sparsity_threshold) {
+    if (true) {
       dense_f[j] = 1;
       n_dense++;
       std::vector<data_quantized_t> tmp(n_data, data_header.unobserved_fv[j]);
@@ -1636,4 +1637,4 @@ inline std::string Data::to_lower(std::string& s){
   return ret;
 }
 
-}  // namespace OnlineBoost
+}  // namespace ONLINEGBDT

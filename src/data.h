@@ -1,4 +1,4 @@
-// Copyright 2022 The OnlineBoost Authors. All Rights Reserved.
+// Copyright 2022 The ONLINEGBDT Authors. All Rights Reserved.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -9,8 +9,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ONLINEBOOST_DATA_H
-#define ONLINEBOOST_DATA_H
+#ifndef ONLINEGBDT_DATA_H
+#define ONLINEGBDT_DATA_H
 
 #include <memory>
 #include <string>
@@ -22,7 +22,7 @@
 #include "config.h"
 #include "utils.h"
 
-namespace OnlineBoost {
+namespace ONLINEGBDT {
 
 #ifndef CUDA
 typedef unsigned short data_quantized_t;
@@ -256,6 +256,6 @@ class Data {
   double normalize_null(int feature, double val);
 };
 
-}  // namespace OnlineBoost
+}  // namespace ONLINEGBDT
 
-#endif  // ONLINEBOOST_DATA_H
+#endif  // ONLINEGBDT_DATA_H

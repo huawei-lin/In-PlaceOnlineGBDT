@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(In-PlaceOnlineBoost)
+project(ONLINEGBDT)
 
 if (CUDA)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O3 -march=native")
@@ -15,11 +15,20 @@ file(GLOB SOURCE_FILES src/*.h src/*.cpp)
 option(CUDA "cuda" OFF)
 option(OMP "omp" OFF)
 option(NATIVE "native" OFF)
+option(TIME_EVALUATION "time_evaluation" OFF)
+option(SPLIT_EVALUATION "split_evaluation" OFF)
 
 if (NATIVE)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 endif()
 
+if (TIME_EVALUATION)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DTIME_EVALUATION")
+endif()
+
+if (SPLIT_EVALUATION)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSPLIT_EVALUATION")
+endif()
 
 add_definitions(-w)
 

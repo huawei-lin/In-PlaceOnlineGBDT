@@ -1,4 +1,4 @@
-// Copyright 2022 The OnlineBoost Authors. All Rights Reserved.
+// Copyright 2022 The ONLINEGBDT Authors. All Rights Reserved.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -15,7 +15,7 @@
 #else
 #include "dummy_omp.h"
 #endif
-namespace OnlineBoost {
+namespace ONLINEGBDT {
 
 namespace Utils {
 
@@ -184,4 +184,4 @@ void freeDeviceMem(std::vector<GPUArgs> &args) {
 }
 
 }
-}  // namespace OnlineBoost
+}  // namespace ONLINEGBDT

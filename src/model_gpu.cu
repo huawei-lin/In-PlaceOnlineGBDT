@@ -39,7 +39,7 @@
 
 #define INIT_NUM_THREAD 1024
 
-namespace OnlineBoost {
+namespace ONLINEGBDT {
 
 template<class Key,class Value>
 struct ArgMaxPair{
@@ -2339,4 +2339,4 @@ void ABCMartGPU::exhaustiveTrain(int n_skip) {
 
 //----------ABCMart end----------//
 
-}  // namespace OnlineBoost
+}  // namespace ONLINEGBDT

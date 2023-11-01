@@ -62,11 +62,12 @@ Here we would like to evaluate these three models in `./data/optdigits.test.csv`
 * `-model_n_iterations`, `-iter` (default 1000)
 * `-model_n_classes` (default 0) the max number of classes allowed in this model (>= the number of classes on current dataset, 0 indicates do not set a specific class number)
 * `-model_name`, `-method` regression/lambdarank/mart/abcmart/robustlogit/abcrobustlogit (default robustlogit)
-#### Unlearning related:
+#### Decremental learning related:
 * `-unlearning_ids_path` path to unlearning indices
-* `-lazy_update_freq` (default 1)
-#### Tuning related:
+* `-split_robustness_tolerance` (default 0, double) tolerance for split change 
+#### Incremental learning related:
 * `-tuning_data_path` path to tuning data
+* `-split_robustness_tolerance` (default 0, double) tolerance for split change 
 #### Parallelism:
 * `-n_threads`, `-threads` (default 1)
 #### Other:

@@ -1,4 +1,4 @@
-// Copyright 2022 The OnlineBoost Authors. All Rights Reserved.
+// Copyright 2022 The ONLINEGBDT Authors. All Rights Reserved.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -9,8 +9,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ONLINEBOOST_TREE_H
-#define ONLINEBOOST_TREE_H
+#ifndef ONLINEGBDT_TREE_H
+#define ONLINEGBDT_TREE_H
 
 #include <utility>  // std::pair
 #include <vector>
@@ -20,7 +20,7 @@
 #include "utils.h"
 
 
-namespace OnlineBoost {
+namespace ONLINEGBDT {
 struct HistBin{
   int count;
   hist_t sum;
@@ -106,13 +106,23 @@ class Tree {
   virtual void unlearnBinSort(int x, int sib, uint start, uint end, std::vector<uint>& ids);
   virtual void tuneBinSort(int x, int sib, uint start, uint end, std::vector<uint>& ids);
 
-  void buildTree(std::vector<uint> *ids, std::vector<uint> *fids);
   void deleteIds();
   void insertIds();
-  void unlearnTree(std::vector<uint> *ids, std::vector<uint> *fids, \
+
+  void buildTree(std::vector<uint> *ids, std::vector<uint> *fids);
+  int unlearnTree(std::vector<uint> *ids, std::vector<uint> *fids, \
                    std::vector<uint> *unids_ptr);
-  void tuneTree(std::vector<uint> *ids, std::vector<uint> *fids, \
+  int tuneTree(std::vector<uint> *ids, std::vector<uint> *fids, \
                    std::vector<uint> *tune_ids_ptr);
+
+#ifdef TIME_EVALUATION
+  std::map<std::string, double>* time_records;
+  std::map<std::string, std::vector<double>>* vector_record;
+  int* retrain_node_cnt;
+  Utils::Timer t4;
+
+  void set_evlation_records(std::map<std::string, double>* time_records, std::map<std::string, std::vector<double>>* vector_record, int* retrain_node_cnt = nullptr);
+#endif
 
   void updateFeatureImportance(int iter);
 
@@ -197,6 +207,6 @@ class Tree {
   }
 };
 
-}  // namespace OnlineBoost
+}  // namespace ONLINEGBDT
 
-#endif  // ONLINEBOOST_TREE_H
+#endif  // ONLINEGBDT_TREE_H

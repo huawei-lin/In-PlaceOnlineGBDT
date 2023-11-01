@@ -1,4 +1,4 @@
-// Copyright 2022 The OnlineBoost Authors. All Rights Reserved.
+// Copyright 2022 The ONLINEGBDT Authors. All Rights Reserved.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -9,8 +9,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ONLINEBOOST_MODEL_H
-#define ONLINEBOOST_MODEL_H
+#ifndef ONLINEGBDT_MODEL_H
+#define ONLINEGBDT_MODEL_H
 
 #include <algorithm>
 #include <cmath>
@@ -18,12 +18,13 @@
 #include <memory>
 #include <utility>
 #include <vector>
+#include <map>
 
 #include "config.h"
 #include "data.h"
 #include "tree.h"
 
-namespace OnlineBoost {
+namespace ONLINEGBDT {
 
 struct ModelHeader {
   // config info
@@ -63,6 +64,11 @@ class GradientBoosting {
   std::vector<unsigned int> ids, fids, unids;
   std::vector<std::vector<unsigned int>> fids_record;
   std::string experiment_path;
+
+# ifdef TIME_EVALUATION
+  std::map<std::string, double> time_records;
+  std::map<std::string, std::vector<double>> vector_record;
+# endif
 
   Config* config;
   Data* data;
@@ -128,7 +134,10 @@ class GradientBoosting {
 	void print_test_message(int iter,double iter_time,int& low_err);
 	virtual void print_test_message(int iter,double iter_time,double& low_loss) {}
 	virtual void print_train_message(int iter,double loss,double iter_time);
-        void print_unlearn_message(int iter,double loss,double iter_time, std::vector<std::vector<double>>& F);
+        void print_train_message(int iter,double loss,double iter_time, std::vector<std::vector<double>>& F);
+# ifdef TIME_EVALUATION
+        void print_detailed_message(int iter,double loss,double iter_time, std::vector<std::vector<double>>& F, int retrain_node_cnt);
+# endif
 	
   // only for ranking
   virtual void print_rank_test_message(int iter,double iter_time);
@@ -188,6 +197,7 @@ class Mart : public GradientBoosting {
  private:
   void computeHessianResidual();
   void computeHessianResidual(std::vector<std::vector<double>>& F);
+  void computeHessianResidual(std::vector<std::vector<double>>& F, std::vector<unsigned int>& tune_ids, std::vector<double>& residuals, std::vector<double>& hessians);
 };
 
 class ABCMart : public GradientBoosting {
@@ -238,7 +248,7 @@ class GBRank : public GradientBoosting {
   void GBupdateF(int k, Tree* currTree,int n_iter);
 };
 
-}  // namespace OnlineBoost
+}  // namespace ONLINEGBDT
 
-#endif  // ONLINEBOOST_MODEL_H
+#endif  // ONLINEGBDT_MODEL_H
 
