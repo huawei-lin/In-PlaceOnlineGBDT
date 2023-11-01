@@ -1,5 +1,11 @@
 # In-Place Online GBDT
 
+## Requirements
+```
+gcc@11.2.0
+cmake@3.21.4
+```
+
 ## Quick Start
 ### Installation guide
 Run the following commands to build Online Boost from source:
